@@ -1,0 +1,6 @@
+package gateway;
+
+enum MessageId {
+	LOGIN_REQUEST = 1;
+	LOGIN_RESPONSE = 2;
+}

@@ -1,35 +1,64 @@
 from enum import Enum
 
-import _messages
+from _messages_pb2 import *
+from _message_ids_pb2 import *
 
-class GatewayServerMessageFactoryError(Exception):
+class GatewayMessageFactoryError(Exception):
     pass
 
-class GatewayServerMessageId(Enum):
-    LOGIN_REQUEST = 1
-    LOGIN_RESPONSE = 2
-
-class GatewayServerMessageFactory:
+class GatewayMessageFactory:
     
     def __init__(self):
         self._messageMap = {
-            GatewayServerMessageId.LOGIN_REQUEST: _messages.LoginRequestMessage,
-            GatewayServerMessageId.LOGIN_RESPONSE: _messages.LoginResponseMessage
+            LOGIN_REQUEST: LoginRequestMessage,
+            LOGIN_RESPONSE: LoginResponseMessage
         }
+
+    def encodeMessage(self, message):
+        message_id = self._getMessageIdOfMessage(message)
+
+        from struct import pack
+        data_header = pack("B", message_id)
+
+        data = message.SerializeToString()
+
+        return data_header + data        
 
     def decodeMessage(self, data):
         if not isinstance(data, bytes):
-            raise GatewayServerMessageFactoryError("decodeMessage expects data to be of type 'bytes'")
+            raise GatewayMessageFactoryError("decodeMessage expects data to be of type 'bytes'")
 
         if len(data) < 1:
-            raise GatewayServerMessageFactoryError("decodeMessage requires at least one byte for header")
+            raise GatewayMessageFactoryError("decodeMessage requires at least one byte for header")
 
         from struct import unpack
         message_id = unpack("B", data[0])[0]
         
-        return self._messageMap[GatewayServerMessageId(message_id)]()
+        if not self._messageMap.has_key(message_id):
+            raise GatewayMessageFactoryError("decodeMessage found unexpected message_id in header : {}".format(message_id))
+
+        message = self._messageMap[message_id]()
+        message.ParseFromString(data[1:])
+        return message
+
+    def _getMessageIdOfMessage(self, message):
+        for k, v in self._messageMap.items():
+            if isinstance(message, v):
+                return k
+        
+        raise GatewayMessageFactoryError("no message_id exists for message : {}".format(message))
 
 
 if __name__ == '__main__':
-    factory = GatewayServerMessageFactory()
-    print (factory.decodeMessage(b"\x02"))
+    factory = GatewayMessageFactory()
+
+    test_message = LoginRequestMessage()
+    test_message.steam_id = 123
+
+    data = factory.encodeMessage(test_message)
+    decoded_message = factory.decodeMessage(data)
+
+    assert test_message == decoded_message
+
+
+

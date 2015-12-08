@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>f17f37c3-f1a8-4cac-b6fc-df83e283c525</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>gateway\_message_factory.py</StartupFile>
+    <StartupFile>gateway\client.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -35,13 +35,17 @@
   <ItemGroup>
     <Compile Include="gateway\client.py" />
     <Compile Include="gateway\server.py" />
-    <Compile Include="gateway\_messages.py" />
+    <Compile Include="gateway\_messages_pb2.py" />
     <Compile Include="gateway\_message_factory.py" />
-    <Compile Include="gateway\_server_protocol.py" />
+    <Compile Include="gateway\_message_ids_pb2.py" />
     <Compile Include="gateway\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="gateway\_messages.proto" />
+    <Content Include="gateway\_message_ids.proto" />
   </ItemGroup>
   <Import Condition="Exists($(PtvsTargetsFile))" Project="$(PtvsTargetsFile)" />
   <Import Condition="!Exists($(PtvsTargetsFile))" Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
