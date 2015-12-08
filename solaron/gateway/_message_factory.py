@@ -1,7 +1,6 @@
 from enum import Enum
 
 from _messages_pb2 import *
-from _message_ids_pb2 import *
 
 class GatewayMessageFactoryError(Exception):
     pass

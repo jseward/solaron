@@ -1,7 +1,7 @@
-"""gateway_client
+"""client
 
 Usage:
-    gateway_client.py [options]
+    client.py [options]
 
 Options:
     -a --address ADDRESS    Address to connect to [default: localhost]
@@ -10,70 +10,59 @@ Options:
     --steam_id              steam_id to login with [default: 1]
 """
 
-from twisted.python import log
-from twisted.internet import reactor
-from autobahn.twisted.websocket import WebSocketClientFactory, WebSocketClientProtocol
+from websocket import create_connection
 
 from _message_factory import GatewayMessageFactory
-from _messages_pb2 import LoginRequestMessage
+from _messages_pb2 import *
 
 class GatewayClientError(Exception):
     pass
 
 class GatewayClient:
-    def runWithSteamIdLogin(self, address, port, steam_id, debug):
-        open_message = LoginRequestMessage()
-        open_message.steam_id = steam_id
+    def __init__(self, address, port, timeout=None):
+        self.address = address
+        self.port = port
+        self.timeout = timeout
+        self._messageFactory = GatewayMessageFactory()
 
-        reactor.connectTCP(
-            address,
-            port, 
-            GatewayClientProtocolFactory(open_message, debug=debug))
-        reactor.run()
+    def __enter__(self):
+        self._connect()
+        return self
 
-class GatewayClientProtocolFactory(WebSocketClientFactory):
-    def __init__(self, open_message, *args, **kargs):
-        WebSocketClientFactory.__init__(self, *args, **kargs)
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._disconnect()
 
-        self.protocol = GatewayClientProtocol
-        self.messageFactory = GatewayMessageFactory()
-        self.openMessage = open_message
+    def _getUrl(self):
+        return "ws://{}:{}".format(self.address, self.port)
 
-class GatewayClientProtocol(WebSocketClientProtocol):
+    def _connect(self):
+        self._connection = create_connection(self._getUrl(), timeout=self.timeout)
 
-    def onConnect(self, request):
-        print("Server Connected: {}".format(request.peer))
+    def _disconnect(self):
+        self._connection.close()
 
-    def onOpen(self):
-        print("WebSocket connection open.")
-        if self.factory.openMessage:
-            print("sending open message : {}".format(self.factory.openMessage))
-            self.sendMessage(self.factory.messageFactory.encodeMessage(self.factory.openMessage), isBinary=True)
+    def loginWithSteamId(self, steam_id):
+        if not self._connection.connected:
+            raise GatewayClientError("not connected")
 
-    def onClose(self, wasClean, code, reason):
-        print("WebSocket connection closed: {}".format(reason))
+        request = LoginRequestMessage()
+        request.steam_id = steam_id
+        return self._sendRequest(request, LoginResponseMessage)
 
-    def onMessage(self, payload, isBinary):
-        if not isBinary:
-            #figure out how to configure protocol to catch this at a higher level?
-            raise GatewayClientError("Only binary messages supported")
-
-        message = self.factory.messageFactory.decodeMessage(payload)
-
-        _processMessage(message)
-
-    def _processMessage(message):
-        print("message = {}".format(message))
-
+    def _sendRequest(self, request, expected_response_class):
+        request_data = self._messageFactory.encodeMessage(request)
+        self._connection.send_binary(request_data)
+        response_data = self._connection.recv()
+        response = self._messageFactory.decodeMessage(response_data)        
+        if not isinstance(response, expected_response_class):
+            raise GatewayClientError("response received expected to be of type {} but is of type {}".format(expected_response_class, response.__class__))
+        return response
 
 if __name__ == '__main__':
 
     from docopt import docopt
     args = docopt(__doc__)
 
-    client = GatewayClient()
-    client.runWithSteamIdLogin(
-        args['--address'], 
-        int(args['--port']), 
-        int(args['--steam_id']), 
-        args['--debug'])
+    with GatewayClient(args['--address'], int(args['--port']), 5) as client:
+        response = client.loginWithSteamId(int(args['--steam_id']))
+        assert response.result == SUCCESS

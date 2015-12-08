@@ -1,9 +1,18 @@
 package gateway;
 
+enum MessageId {
+	LOGIN_REQUEST = 1;
+	LOGIN_RESPONSE = 2;
+}
+
+enum Result {
+	SUCCESS = 0;
+}
+
 message LoginRequestMessage {
 	optional int64 steam_id = 1;
 }
 
 message LoginResponseMessage {
-	required int32 result = 1;
+	required Result result = 1;
 }

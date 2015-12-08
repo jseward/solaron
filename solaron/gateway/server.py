@@ -1,7 +1,7 @@
-"""gateway_server
+"""server
 
 Usage:
-    gateway_server.py [options]
+    server.py [options]
 
 Options:
     -p --port PORT   Port to listen on [default: 9000].
@@ -20,6 +20,7 @@ from twisted.internet import reactor
 from autobahn.twisted.websocket import WebSocketServerFactory, WebSocketServerProtocol
 
 from _message_factory import GatewayMessageFactory
+from _messages_pb2 import *
 
 class GatewayServerProtocolError(Exception):
     pass
@@ -48,11 +49,14 @@ class GatewayServerProtocol(WebSocketServerProtocol):
             raise GatewayServerProtocolError("Only binary messages supported")
 
         message = self.factory.messageFactory.decodeMessage(payload)
-
         self._processMessage(message)
 
     def _processMessage(self, message):
+        #removeme
         print("message = {}".format(message))
+        response = LoginResponseMessage()
+        response.result = SUCCESS
+        self.sendMessage(self.factory.messageFactory.encodeMessage(response), isBinary=True)
 
 
 if __name__ == '__main__':

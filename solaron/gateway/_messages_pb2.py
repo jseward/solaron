@@ -3,6 +3,7 @@
 
 import sys
 _b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
+from google.protobuf.internal import enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
@@ -18,10 +19,55 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='_messages.proto',
   package='gateway',
-  serialized_pb=_b('\n\x0f_messages.proto\x12\x07gateway\"\'\n\x13LoginRequestMessage\x12\x10\n\x08steam_id\x18\x01 \x01(\x03\"&\n\x14LoginResponseMessage\x12\x0e\n\x06result\x18\x01 \x02(\x05')
+  serialized_pb=_b('\n\x0f_messages.proto\x12\x07gateway\"\'\n\x13LoginRequestMessage\x12\x10\n\x08steam_id\x18\x01 \x01(\x03\"7\n\x14LoginResponseMessage\x12\x1f\n\x06result\x18\x01 \x02(\x0e\x32\x0f.gateway.Result*2\n\tMessageId\x12\x11\n\rLOGIN_REQUEST\x10\x01\x12\x12\n\x0eLOGIN_RESPONSE\x10\x02*\x15\n\x06Result\x12\x0b\n\x07SUCCESS\x10\x00')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
+_MESSAGEID = _descriptor.EnumDescriptor(
+  name='MessageId',
+  full_name='gateway.MessageId',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='LOGIN_REQUEST', index=0, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='LOGIN_RESPONSE', index=1, number=2,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=126,
+  serialized_end=176,
+)
+_sym_db.RegisterEnumDescriptor(_MESSAGEID)
+
+MessageId = enum_type_wrapper.EnumTypeWrapper(_MESSAGEID)
+_RESULT = _descriptor.EnumDescriptor(
+  name='Result',
+  full_name='gateway.Result',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='SUCCESS', index=0, number=0,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=178,
+  serialized_end=199,
+)
+_sym_db.RegisterEnumDescriptor(_RESULT)
+
+Result = enum_type_wrapper.EnumTypeWrapper(_RESULT)
+LOGIN_REQUEST = 1
+LOGIN_RESPONSE = 2
+SUCCESS = 0
 
 
 
@@ -64,7 +110,7 @@ _LOGINRESPONSEMESSAGE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='result', full_name='gateway.LoginResponseMessage.result', index=0,
-      number=1, type=5, cpp_type=1, label=2,
+      number=1, type=14, cpp_type=8, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -81,11 +127,14 @@ _LOGINRESPONSEMESSAGE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=69,
-  serialized_end=107,
+  serialized_end=124,
 )
 
+_LOGINRESPONSEMESSAGE.fields_by_name['result'].enum_type = _RESULT
 DESCRIPTOR.message_types_by_name['LoginRequestMessage'] = _LOGINREQUESTMESSAGE
 DESCRIPTOR.message_types_by_name['LoginResponseMessage'] = _LOGINRESPONSEMESSAGE
+DESCRIPTOR.enum_types_by_name['MessageId'] = _MESSAGEID
+DESCRIPTOR.enum_types_by_name['Result'] = _RESULT
 
 LoginRequestMessage = _reflection.GeneratedProtocolMessageType('LoginRequestMessage', (_message.Message,), dict(
   DESCRIPTOR = _LOGINREQUESTMESSAGE,
