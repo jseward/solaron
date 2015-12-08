@@ -8,6 +8,8 @@ Options:
     -p --port PORT          Port to connect to [default: 9000].
 """
 
+import base64
+
 if __name__ == '__main__':
 
     from docopt import docopt
@@ -17,9 +19,9 @@ if __name__ == '__main__':
     url = "ws://" + args['--address'] + ":" + args['--port']
     ws = create_connection(url)
     print "Sending 'Hello, World'..."
-    ws.send("Hello, World")
+    ws.send_binary(base64.b64encode(b"Hello, World"))
     print "Sent"
-    print "Reeiving..."
+    print "Receiving..."
     result = ws.recv()
     print "Received '%s'" % result
     ws.close()

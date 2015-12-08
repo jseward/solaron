@@ -1,0 +1,9 @@
+package gateway;
+
+message LoginRequestMessage {
+	optional int64 steam_id = 1;
+}
+
+message LoginResponseMessage {
+	required int32 result = 1;
+}
