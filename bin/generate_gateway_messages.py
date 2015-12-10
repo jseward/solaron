@@ -8,7 +8,7 @@ import subprocess
 PROTOC_EXE_NAME = "protoc.exe"
 PROTOC_URL = "https://github.com/google/protobuf/releases/download/v2.6.1/protoc-2.6.1-win32.zip"
 GATEWAY_DIR = os.path.abspath("..\solaron\gateway")
-PROTO_NAMES = ["_messages.proto", "_message_ids.proto"]
+PROTO_NAMES = ["_messages.proto"]
 
 if not os.path.isfile(PROTOC_EXE_NAME):
     print("{} not found... downloading from {}".format(PROTOC_EXE_NAME, PROTOC_URL))

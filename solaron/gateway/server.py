@@ -4,7 +4,7 @@ Usage:
     server.py [options]
 
 Options:
-    -p --port PORT   Port to listen on [default: 9000].
+    -p --port PORT   Port to listen on [default: 9000]
     -d --debug       Debug enabled? [default: False]
 """
 
@@ -20,7 +20,7 @@ from twisted.internet import reactor
 from autobahn.twisted.websocket import WebSocketServerFactory, WebSocketServerProtocol
 
 from _message_factory import GatewayMessageFactory
-from _messages_pb2 import *
+from _messages_pb2 import LoginResponseMessage, SUCCESS
 
 class GatewayServerProtocolError(Exception):
     pass
@@ -55,7 +55,7 @@ class GatewayServerProtocol(WebSocketServerProtocol):
         #removeme
         print("message = {}".format(message))
         response = LoginResponseMessage()
-        response.result = SUCCESS
+        response.status_code = SUCCESS
         self.sendMessage(self.factory.messageFactory.encodeMessage(response), isBinary=True)
 
 

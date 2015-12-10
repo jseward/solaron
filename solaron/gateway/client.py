@@ -4,7 +4,7 @@ Usage:
     client.py [options]
 
 Options:
-    -a --address ADDRESS    Address to connect to [default: localhost]
+    -a --address ADDRESS    Address to connect [default: localhost]
     -p --port PORT          Port to connect to [default: 9000]
     -d --debug              Debug enabled? [default: False]
     --steam_id              steam_id to login with [default: 1]
@@ -19,27 +19,39 @@ class GatewayClientError(Exception):
     pass
 
 class GatewayClient:
+
     def __init__(self, address, port, timeout=None):
         self.address = address
         self.port = port
         self.timeout = timeout
         self._messageFactory = GatewayMessageFactory()
+        self._connection = None
 
     def __enter__(self):
-        self._connect()
+        self.connect()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self._disconnect()
+        self.disconnect()
 
     def _getUrl(self):
         return "ws://{}:{}".format(self.address, self.port)
 
-    def _connect(self):
-        self._connection = create_connection(self._getUrl(), timeout=self.timeout)
+    def isConnected(self):
+        return self._connection != None and self._connection.connected
 
-    def _disconnect(self):
-        self._connection.close()
+    def connect(self):
+        if self.isConnected():
+            raise GatewayClientError("already connected")
+        
+        try:
+            self._connection = create_connection(self._getUrl(), timeout=self.timeout)
+        except Exception as e:
+            raise GatewayClientError("Connect to '{}' failed: {}".format(self._getUrl(), e))
+
+    def disconnect(self):
+        if self.isConnected():
+            self._connection.close()
 
     def loginWithSteamId(self, steam_id):
         if not self._connection.connected:
@@ -63,6 +75,11 @@ if __name__ == '__main__':
     from docopt import docopt
     args = docopt(__doc__)
 
-    with GatewayClient(args['--address'], int(args['--port']), 5) as client:
-        response = client.loginWithSteamId(int(args['--steam_id']))
+    address = args['--address']
+    port = int(args['--port'])
+    timeout = 5
+    steamId = int(args['--steam_id'])
+
+    with GatewayClient(address, port, timeout) as client:
+        response = client.loginWithSteamId(steamId)
         assert response.result == SUCCESS
