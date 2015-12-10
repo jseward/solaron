@@ -38,7 +38,7 @@ class GatewayMessageFactory:
 
         message = self._messageMap[message_id]()
         message.ParseFromString(data[1:])
-        return message
+        return message_id, message
 
     def _getMessageIdOfMessage(self, message):
         for k, v in self._messageMap.items():

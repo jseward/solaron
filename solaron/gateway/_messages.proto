@@ -7,12 +7,19 @@ enum MessageId {
 
 enum StatusCode {
 	SUCCESS = 0;
+	ALREADY_LOGGED_IN = 1;
+	INVALID_LOGIN_REQUEST = 2;
 }
 
 message LoginRequestMessage {
-	optional int64 steam_id = 1;
+	enum HandlingType {
+		WITH_STEAM_ID = 0;
+	}
+
+	required HandlingType handlingType = 1;
+	optional int64 steamId = 2;
 }
 
 message LoginResponseMessage {
-	required StatusCode status_code = 1;
+	required StatusCode statusCode = 1;
 }

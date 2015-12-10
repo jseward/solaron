@@ -2,7 +2,9 @@ import unittest
 
 #for these imports to work setup the PYTHONPATH environment variable to contain solaron root (ex. c:\dev\solaron\solaron)
 from gateway.client import GatewayClient
-from gateway._messages_pb2 import LoginRequestMessage, SUCCESS
+from gateway._messages_pb2 import LoginRequestMessage, SUCCESS, ALREADY_LOGGED_IN
+
+from _helpers import getTestHashCode
 
 GATEWAY_ADDRESS = "localhost"
 GATEWAY_PORT = 9000
@@ -28,8 +30,8 @@ class Client:
 
     def _checkResponse(self, response, shouldVerifyResponse):
         if shouldVerifyResponse:
-            if response.statusCode != OK:
-                raise ClientError("StatusCode expected to be OK but instead is {} : {}".format(response.statusCode, response))
+            if response.statusCode != SUCCESS:
+                raise ClientError("StatusCode expected to be SUCCESS but instead is {} : {}".format(response.statusCode, response))
         return response
 
 class Account:
@@ -38,10 +40,12 @@ class Account:
 
 class GatewayTestCase(unittest.TestCase):
     def setUp(self):
-        pass
+        self._createdAccountCount = 0
 
     def createAccount(self):
-        steamId = 123 #todo - generate random steamId
+        hash = getTestHashCode()
+        steamId = hash + self._createdAccountCount
+        self._createdAccountCount += 1
         return Account(steamId)
 
     def createClient(self):
@@ -52,7 +56,14 @@ class LoginTestCase(GatewayTestCase):
         with self.createClient() as client:
             client.connect()
             response = client.loginWithSteamId(shouldVerifyResponse=False)
-            self.assertEqual(response.status_code, SUCCESS)
+            self.assertEqual(response.statusCode, SUCCESS)
+
+    def testDuplicateLoginWillFail(self):
+        with self.createClient() as client:
+            client.connect()
+            client.loginWithSteamId()
+            secondLoginResponse = client.loginWithSteamId(shouldVerifyResponse=False)
+            self.assertEqual(secondLoginResponse.statusCode, ALREADY_LOGGED_IN)
 
 
 if __name__ == "__main__":

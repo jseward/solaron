@@ -53,22 +53,23 @@ class GatewayClient:
         if self.isConnected():
             self._connection.close()
 
-    def loginWithSteamId(self, steam_id):
+    def loginWithSteamId(self, steamId):
         if not self._connection.connected:
             raise GatewayClientError("not connected")
 
         request = LoginRequestMessage()
-        request.steam_id = steam_id
+        request.handlingType = LoginRequestMessage.WITH_STEAM_ID
+        request.steamId = steamId
         return self._sendRequest(request, LoginResponseMessage)
 
-    def _sendRequest(self, request, expected_response_class):
-        request_data = self._messageFactory.encodeMessage(request)
-        self._connection.send_binary(request_data)
-        response_data = self._connection.recv()
-        response = self._messageFactory.decodeMessage(response_data)        
-        if not isinstance(response, expected_response_class):
-            raise GatewayClientError("response received expected to be of type {} but is of type {}".format(expected_response_class, response.__class__))
-        return response
+    def _sendRequest(self, request, expectedResponseClass):
+        requestData = self._messageFactory.encodeMessage(request)
+        self._connection.send_binary(requestData)
+        responseData = self._connection.recv()
+        responseMessageId, responseMessage = self._messageFactory.decodeMessage(responseData)        
+        if not isinstance(responseMessage, expectedResponseClass):
+            raise GatewayClientError("response received expected to be of type {} but is of type {}".format(expectedResponseClass, response.__class__))
+        return responseMessage
 
 if __name__ == '__main__':
 

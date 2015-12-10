@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>f17f37c3-f1a8-4cac-b6fc-df83e283c525</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>tests\test_gateway.py</StartupFile>
+    <StartupFile>gateway\server.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -39,6 +39,7 @@
     <Compile Include="gateway\_message_factory.py" />
     <Compile Include="gateway\__init__.py" />
     <Compile Include="tests\test_gateway.py" />
+    <Compile Include="tests\_helpers.py" />
     <Compile Include="tests\__init__.py" />
   </ItemGroup>
   <ItemGroup>

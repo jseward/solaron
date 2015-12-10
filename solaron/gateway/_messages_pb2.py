@@ -19,7 +19,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='_messages.proto',
   package='gateway',
-  serialized_pb=_b('\n\x0f_messages.proto\x12\x07gateway\"\'\n\x13LoginRequestMessage\x12\x10\n\x08steam_id\x18\x01 \x01(\x03\"@\n\x14LoginResponseMessage\x12(\n\x0bstatus_code\x18\x01 \x02(\x0e\x32\x13.gateway.StatusCode*2\n\tMessageId\x12\x11\n\rLOGIN_REQUEST\x10\x01\x12\x12\n\x0eLOGIN_RESPONSE\x10\x02*\x19\n\nStatusCode\x12\x0b\n\x07SUCCESS\x10\x00')
+  serialized_pb=_b('\n\x0f_messages.proto\x12\x07gateway\"\x8a\x01\n\x13LoginRequestMessage\x12?\n\x0chandlingType\x18\x01 \x02(\x0e\x32).gateway.LoginRequestMessage.HandlingType\x12\x0f\n\x07steamId\x18\x02 \x01(\x03\"!\n\x0cHandlingType\x12\x11\n\rWITH_STEAM_ID\x10\x00\"?\n\x14LoginResponseMessage\x12\'\n\nstatusCode\x18\x01 \x02(\x0e\x32\x13.gateway.StatusCode*2\n\tMessageId\x12\x11\n\rLOGIN_REQUEST\x10\x01\x12\x12\n\x0eLOGIN_RESPONSE\x10\x02*K\n\nStatusCode\x12\x0b\n\x07SUCCESS\x10\x00\x12\x15\n\x11\x41LREADY_LOGGED_IN\x10\x01\x12\x19\n\x15INVALID_LOGIN_REQUEST\x10\x02')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -40,8 +40,8 @@ _MESSAGEID = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=135,
-  serialized_end=185,
+  serialized_start=234,
+  serialized_end=284,
 )
 _sym_db.RegisterEnumDescriptor(_MESSAGEID)
 
@@ -56,11 +56,19 @@ _STATUSCODE = _descriptor.EnumDescriptor(
       name='SUCCESS', index=0, number=0,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ALREADY_LOGGED_IN', index=1, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='INVALID_LOGIN_REQUEST', index=2, number=2,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=187,
-  serialized_end=212,
+  serialized_start=286,
+  serialized_end=361,
 )
 _sym_db.RegisterEnumDescriptor(_STATUSCODE)
 
@@ -68,7 +76,27 @@ StatusCode = enum_type_wrapper.EnumTypeWrapper(_STATUSCODE)
 LOGIN_REQUEST = 1
 LOGIN_RESPONSE = 2
 SUCCESS = 0
+ALREADY_LOGGED_IN = 1
+INVALID_LOGIN_REQUEST = 2
 
+
+_LOGINREQUESTMESSAGE_HANDLINGTYPE = _descriptor.EnumDescriptor(
+  name='HandlingType',
+  full_name='gateway.LoginRequestMessage.HandlingType',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='WITH_STEAM_ID', index=0, number=0,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=134,
+  serialized_end=167,
+)
+_sym_db.RegisterEnumDescriptor(_LOGINREQUESTMESSAGE_HANDLINGTYPE)
 
 
 _LOGINREQUESTMESSAGE = _descriptor.Descriptor(
@@ -79,8 +107,15 @@ _LOGINREQUESTMESSAGE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='steam_id', full_name='gateway.LoginRequestMessage.steam_id', index=0,
-      number=1, type=3, cpp_type=2, label=1,
+      name='handlingType', full_name='gateway.LoginRequestMessage.handlingType', index=0,
+      number=1, type=14, cpp_type=8, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='steamId', full_name='gateway.LoginRequestMessage.steamId', index=1,
+      number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -90,14 +125,15 @@ _LOGINREQUESTMESSAGE = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
+    _LOGINREQUESTMESSAGE_HANDLINGTYPE,
   ],
   options=None,
   is_extendable=False,
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=28,
-  serialized_end=67,
+  serialized_start=29,
+  serialized_end=167,
 )
 
 
@@ -109,7 +145,7 @@ _LOGINRESPONSEMESSAGE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='status_code', full_name='gateway.LoginResponseMessage.status_code', index=0,
+      name='statusCode', full_name='gateway.LoginResponseMessage.statusCode', index=0,
       number=1, type=14, cpp_type=8, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -126,11 +162,13 @@ _LOGINRESPONSEMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=69,
-  serialized_end=133,
+  serialized_start=169,
+  serialized_end=232,
 )
 
-_LOGINRESPONSEMESSAGE.fields_by_name['status_code'].enum_type = _STATUSCODE
+_LOGINREQUESTMESSAGE.fields_by_name['handlingType'].enum_type = _LOGINREQUESTMESSAGE_HANDLINGTYPE
+_LOGINREQUESTMESSAGE_HANDLINGTYPE.containing_type = _LOGINREQUESTMESSAGE
+_LOGINRESPONSEMESSAGE.fields_by_name['statusCode'].enum_type = _STATUSCODE
 DESCRIPTOR.message_types_by_name['LoginRequestMessage'] = _LOGINREQUESTMESSAGE
 DESCRIPTOR.message_types_by_name['LoginResponseMessage'] = _LOGINRESPONSEMESSAGE
 DESCRIPTOR.enum_types_by_name['MessageId'] = _MESSAGEID

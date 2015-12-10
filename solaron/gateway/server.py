@@ -20,9 +20,11 @@ from twisted.internet import reactor
 from autobahn.twisted.websocket import WebSocketServerFactory, WebSocketServerProtocol
 
 from _message_factory import GatewayMessageFactory
-from _messages_pb2 import LoginResponseMessage, SUCCESS
+from _messages_pb2 import LOGIN_REQUEST
+from _messages_pb2 import LoginRequestMessage, LoginResponseMessage
+from _messages_pb2 import SUCCESS, ALREADY_LOGGED_IN
 
-class GatewayServerProtocolError(Exception):
+class GatewayServerError(Exception):
     pass
 
 class GatewayServerProtocolFactory(WebSocketServerFactory):
@@ -31,33 +33,70 @@ class GatewayServerProtocolFactory(WebSocketServerFactory):
 
         self.protocol = GatewayServerProtocol
         self.messageFactory = GatewayMessageFactory()
+        
+        self._nextClientId = 0
+        self._loggedInClientMap = {}
+        self._messageHandlerMap = {
+            LOGIN_REQUEST: self._handleLoginRequest
+        }
+
+    def incrementClientId(self):
+        prev = self._nextClientId
+        self._nextClientId += 1
+        return prev
+
+    def handleMessage(self, protocol, messageId, message):
+        if not self._messageHandlerMap.has_key(messageId):
+            raise GatewayServerError("No message handler exists for messageId:{} ({})".format(messageId, message))
+        self._messageHandlerMap[messageId](protocol, message)
+
+    def _handleLoginRequest(self, protocol, message):
+        print("Received LoginRequest : {}".format(protocol.peer))
+        
+        if self._loggedInClientMap.has_key(protocol.clientId):
+            print("Client has already logged in! ClientId={} , Peer={}".format(protocol.clientId, protocol.peer))
+            protocol.sendLoginResponseWithStatusCode(ALREADY_LOGGED_IN)
+        else:
+            if message.handlingType == LoginRequestMessage.WITH_STEAM_ID:
+                self._handleLoginRequestWithSteamId(protocol, message)
+            else:
+                print("LoginRequest has unexpected handlingType : {}".format(message.handlingType))
+                protocol.sendLoginResponseWithStatusCode(INVALID_LOGIN_REQUEST)
+
+    def _handleLoginRequestWithSteamId(self, protocol, message):
+        #TODO
+        self._loggedInClientMap[protocol.clientId] = protocol
+        response = LoginResponseMessage()
+        response.statusCode = SUCCESS
+        protocol.encodeAndSendMessage(response)
 
 class GatewayServerProtocol(WebSocketServerProtocol):
 
     def onConnect(self, request):
-        print("Client connecting: {} ({})".format(request.peer, self))
+        pass
 
     def onOpen(self):
-        print("WebSocket connection open.")
+        self.clientId = self.factory.incrementClientId()
+        print("Client connected. peer={} , clientId={}".format(self.peer, self.clientId))
 
     def onClose(self, wasClean, code, reason):
-        print("WebSocket connection closed: {}".format(reason))
+        print("Client connection closed. clientId={} , reason={}".format(self.clientId, reason))
 
     def onMessage(self, payload, isBinary):
         if not isBinary:
             #figure out how to configure protocol to catch this at a higher level?
-            raise GatewayServerProtocolError("Only binary messages supported")
+            raise GatewayServerError("Only binary messages supported")
 
-        message = self.factory.messageFactory.decodeMessage(payload)
-        self._processMessage(message)
+        messageId, message = self.factory.messageFactory.decodeMessage(payload)
+        self.factory.handleMessage(self, messageId, message)
 
-    def _processMessage(self, message):
-        #removeme
-        print("message = {}".format(message))
-        response = LoginResponseMessage()
-        response.status_code = SUCCESS
-        self.sendMessage(self.factory.messageFactory.encodeMessage(response), isBinary=True)
+    def encodeAndSendMessage(self, message):
+        self.sendMessage(self.factory.messageFactory.encodeMessage(message), isBinary=True)
 
+    def sendLoginResponseWithStatusCode(self, statusCode):
+        message = LoginResponseMessage()
+        message.statusCode = statusCode
+        self.encodeAndSendMessage(message)
 
 if __name__ == '__main__':
 
